@@ -1,8 +1,7 @@
+use clap::{App, Arg};  // Import the new clap syntax
 use std::{process::Command, thread, time::Duration};
 use chrono::Local;
 use serde::Deserialize;
-use md5;
-use argh;
 
 #[derive(Deserialize)]
 struct Args {
@@ -13,7 +12,7 @@ struct Args {
     sleep: Option<u64>,
     ua: Option<String>,
     target: Option<String>,
-    format: Option<String>,
+    dist: Option<String>,
 }
 
 fn log_debug(message: &str, debug_mode: bool) {
@@ -62,43 +61,69 @@ fn print_help() {
     println!("\x1b[36m  -s, --sleep\x1b[0m      Sleep time (in seconds) before taking screenshot (default 0)");
     println!("\x1b[36m  -u, --ua\x1b[0m         Custom User-Agent string");
     println!("\x1b[36m  -t, --target\x1b[0m     Target URL to capture (e.g., https://example.com)");
-    println!("\x1b[36m  -f, --format\x1b[0m     Output file format (png, jpg, webp)");
+    println!("\x1b[36m  -d, --dist\x1b[0m       Output file format (png, webp, jpg)");
 }
 
 fn main() {
-    let args: Args = match argh::from_env() {
-        Ok(args) => args,
-        Err(_) => {
-            print_help();
-            std::process::exit(1);
-        }
-    };
+    let matches = App::new("WebSnap")
+        .version("1.0")
+        .about("Capture screenshots of websites")
+        .arg(Arg::new("output")
+            .short('o')
+            .long("output")
+            .takes_value(true)
+            .help("Output file or path to save the screenshot"))
+        .arg(Arg::new("debug")
+            .short('d')
+            .long("debug")
+            .takes_value(false)
+            .help("Enable debug output"))
+        .arg(Arg::new("height")
+            .short('h')
+            .long("height")
+            .takes_value(true)
+            .default_value("1080")
+            .help("Screenshot height"))
+        .arg(Arg::new("width")
+            .short('w')
+            .long("width")
+            .takes_value(true)
+            .default_value("1920")
+            .help("Screenshot width"))
+        .arg(Arg::new("sleep")
+            .short('s')
+            .long("sleep")
+            .takes_value(true)
+            .default_value("0")
+            .help("Sleep time before taking screenshot"))
+        .arg(Arg::new("ua")
+            .short('u')
+            .long("ua")
+            .takes_value(true)
+            .default_value("Mozilla/5.0")
+            .help("Custom User-Agent string"))
+        .arg(Arg::new("target")
+            .short('t')
+            .long("target")
+            .takes_value(true)
+            .help("Target URL to capture"))
+        .arg(Arg::new("dist")
+            .short('d')
+            .long("dist")
+            .takes_value(true)
+            .default_value("png")
+            .help("Output file format"))
+        .get_matches();
 
-    if args.target.is_none() {
-        println!("! Target URL is required. Use -t or --target to specify the URL.");
-    }
+    // Parsing arguments
+    let output = matches.value_of("output").unwrap_or_default();
+    let debug = matches.is_present("debug");
+    let height = matches.value_of("height").unwrap_or("1080").parse::<u32>().unwrap();
+    let width = matches.value_of("width").unwrap_or("1920").parse::<u32>().unwrap();
+    let sleep = matches.value_of("sleep").unwrap_or("0").parse::<u64>().unwrap();
+    let ua = matches.value_of("ua").unwrap_or("Mozilla/5.0");
+    let target = matches.value_of("target").unwrap_or("https://example.com");
+    let dist = matches.value_of("dist").unwrap_or("png");
 
-    let target_url = args.target.unwrap_or_else(|| "https://example.com".to_string());
-
-    if args.output.is_none() {
-        let timestamp = Local::now().format("%Y%m%d%H%M%S").to_string();
-        let file_hash = format!("{:x}", md5::compute(timestamp));
-        let format = args.format.unwrap_or_else(|| "png".to_string());
-        args.output = Some(format!("{}.{}", file_hash, format));
-    }
-
-    let ua = args.ua.unwrap_or_else(|| "Mozilla/5.0".to_string());
-    let sleep_time = args.sleep.unwrap_or(0);
-    let width = args.width.unwrap_or(1920);
-    let height = args.height.unwrap_or(1080);
-
-    let format = args.format.unwrap_or_else(|| "png".to_string());
-    let format = format.to_lowercase();
-
-    if !["png", "jpg", "webp"].contains(&format.as_str()) {
-        println!("! Invalid format specified. Supported formats are: png, jpg, webp.");
-        std::process::exit(1);
-    }
-
-    capture_screenshot(&target_url, &args.output.unwrap(), width, height, &ua, sleep_time, args.debug);
+    capture_screenshot(target, output, width, height, ua, sleep, debug);
 }
