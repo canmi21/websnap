@@ -25,7 +25,7 @@ def capture_screenshot(url, output_file, width, height, ua, sleep_time, debug_mo
     service = Service(ChromeDriverManager().install())
     
     try:
-        log_debug(f"> Loading URL: {url}", debug_mode)
+        log_debug(f"> Fetch URL: {url}", debug_mode)
 
         driver = webdriver.Chrome(service=service, options=chrome_options)
         
