@@ -13,7 +13,7 @@ struct Args {
     sleep: Option<u64>,
     ua: Option<String>,
     target: Option<String>,
-    dist: Option<String>,
+    format: Option<String>,
 }
 
 fn log_debug(message: &str, debug_mode: bool) {
@@ -62,7 +62,7 @@ fn print_help() {
     println!("\x1b[36m  -s, --sleep\x1b[0m      Sleep time (in seconds) before taking screenshot (default 0)");
     println!("\x1b[36m  -u, --ua\x1b[0m         Custom User-Agent string");
     println!("\x1b[36m  -t, --target\x1b[0m     Target URL to capture (e.g., https://example.com)");
-    println!("\x1b[36m  -d, --dist\x1b[0m       Output file format (png, webp, jpg)");
+    println!("\x1b[36m  -f, --format\x1b[0m       Output file format (png, webp, jpg)");
 }
 
 fn main() {
@@ -105,12 +105,12 @@ fn main() {
             .long("target")
             .value_name("URL")
             .help("Target URL to capture (e.g., https://example.com)"))
-        .arg(Arg::new("dist")
-            .long("dist")
+        .arg(Arg::new("format")
+            .short('f')
+            .long("format")
             .value_name("FORMAT")
             .help("Output file format (png, webp, jpg)"))
         .arg(Arg::new("help")
-            .short('H')
             .long("help")
             .action(clap::ArgAction::SetTrue)
             .help("Print help information"))
@@ -129,7 +129,7 @@ fn main() {
         sleep: matches.get_one::<String>("sleep").and_then(|s| s.parse().ok()),
         ua: matches.get_one::<String>("ua").cloned(),
         target: matches.get_one::<String>("target").cloned(),
-        dist: matches.get_one::<String>("dist").cloned(),
+        format: matches.get_one::<String>("format").cloned(),
     };
 
     if args.target.is_none() {
@@ -137,7 +137,7 @@ fn main() {
         let target_url = "https://example.com".to_string();
         let timestamp = Local::now().format("%Y%m%d%H%M%S").to_string();
         let file_hash = format!("{:x}", md5::compute(timestamp));
-        let output = args.output.unwrap_or_else(|| format!("{}.{}", file_hash, args.dist.as_deref().unwrap_or("png")));
+        let output = args.output.unwrap_or_else(|| format!("{}.{}", file_hash, args.format.as_deref().unwrap_or("png")));
         let ua = args.ua.unwrap_or_else(|| "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36".to_string());
         capture_screenshot(&target_url, &output, args.width.unwrap_or(1920), args.height.unwrap_or(1080), &ua, args.sleep.unwrap_or(0), args.debug);
         std::process::exit(1);
@@ -146,7 +146,7 @@ fn main() {
     let target_url = args.target.unwrap();
     let timestamp = Local::now().format("%Y%m%d%H%M%S").to_string();
     let file_hash = format!("{:x}", md5::compute(timestamp));
-    let output = args.output.unwrap_or_else(|| format!("{}.{}", file_hash, args.dist.as_deref().unwrap_or("png")));
+    let output = args.output.unwrap_or_else(|| format!("{}.{}", file_hash, args.format.as_deref().unwrap_or("png")));
     let ua = args.ua.unwrap_or_else(|| "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36".to_string());
 
     capture_screenshot(&target_url, &output, args.width.unwrap_or(1920), args.height.unwrap_or(1080), &ua, args.sleep.unwrap_or(0), args.debug);
