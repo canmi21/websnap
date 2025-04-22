@@ -1,4 +1,4 @@
-use headless_chrome::Browser;
+use headless_chrome::{Browser, protocol::page::InternalScreenshotFormat};
 use std::{fs, time::Duration};
 use clap::{Arg, Command};
 use chrono::Utc;
@@ -17,8 +17,9 @@ fn capture_screenshot(url: &str, output_file: &str, width: i32, height: i32, ua:
     let tab = browser.new_tab()?;
 
     tab.set_default_timeout(Duration::from_secs(30));
-    tab.set_user_agent(ua)?;
-    tab.set_size(width, height)?;
+    tab.set_user_agent(ua, None, None)?;
+
+    tab.evaluate(&format!("window.resizeTo({}, {});", width, height), true)?;
 
     tab.navigate_to(url)?;
     
@@ -27,7 +28,7 @@ fn capture_screenshot(url: &str, output_file: &str, width: i32, height: i32, ua:
         std::thread::sleep(Duration::from_secs(sleep_time));
     }
 
-    let screenshot = tab.capture_screenshot(headless_chrome::types::CaptureScreenshotFormatOption::Png, None, true)?;
+    let screenshot = tab.capture_screenshot(InternalScreenshotFormat::Png, None, true)?;
     fs::write(output_file, screenshot)?;
     
     log_debug(&format!("+ Screenshot saved to {}", output_file), debug_mode);
