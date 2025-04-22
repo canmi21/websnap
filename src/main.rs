@@ -62,7 +62,7 @@ fn print_help() {
     println!("\x1b[36m  -s, --sleep\x1b[0m      Sleep time (in seconds) before taking screenshot (default 0)");
     println!("\x1b[36m  -u, --ua\x1b[0m         Custom User-Agent string");
     println!("\x1b[36m  -t, --target\x1b[0m     Target URL to capture (e.g., https://example.com)");
-    println!("\x1b[36m  -f, --format\x1b[0m       Output file format (png, webp, jpg)");
+    println!("\x1b[36m  -f, --format\x1b[0m     Output file format (png, webp, jpg)");
 }
 
 fn main() {
@@ -132,21 +132,24 @@ fn main() {
         format: matches.get_one::<String>("format").cloned(),
     };
 
-    if args.target.is_none() {
+    let has_other_args = args.output.is_some() || args.debug || args.height.is_some() || args.width.is_some() ||
+                         args.sleep.is_some() || args.ua.is_some() || args.format.is_some();
+
+    if args.target.is_none() && has_other_args {
         println!("! Target URL is required. Use -t or --target to specify the URL.");
         let target_url = "https://example.com".to_string();
         let timestamp = Local::now().format("%Y%m%d%H%M%S").to_string();
         let file_hash = format!("{:x}", md5::compute(timestamp));
-        let output = args.output.unwrap_or_else(|| format!("{}.{}", file_hash, args.format.as_deref().unwrap_or("png")));
+        let output = args.output.unwrap_or_else(|| format!("{}.{}", file_hash, args.format.as_deref().unwrap_or("webp")));
         let ua = args.ua.unwrap_or_else(|| "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36".to_string());
         capture_screenshot(&target_url, &output, args.width.unwrap_or(1920), args.height.unwrap_or(1080), &ua, args.sleep.unwrap_or(0), args.debug);
         std::process::exit(1);
     }
 
-    let target_url = args.target.unwrap();
+    let target_url = args.target.unwrap_or("https://example.com".to_string());
     let timestamp = Local::now().format("%Y%m%d%H%M%S").to_string();
     let file_hash = format!("{:x}", md5::compute(timestamp));
-    let output = args.output.unwrap_or_else(|| format!("{}.{}", file_hash, args.format.as_deref().unwrap_or("png")));
+    let output = args.output.unwrap_or_else(|| format!("{}.{}", file_hash, args.format.as_deref().unwrap_or("webp")));
     let ua = args.ua.unwrap_or_else(|| "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36".to_string());
 
     capture_screenshot(&target_url, &output, args.width.unwrap_or(1920), args.height.unwrap_or(1080), &ua, args.sleep.unwrap_or(0), args.debug);
