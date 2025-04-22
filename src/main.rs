@@ -22,7 +22,7 @@ fn log_debug(message: &str, debug_mode: bool) {
     }
 }
 
-fn capture_screenshot(url: &str, output_file: &str, width: u32, height: u32, ua: &str, sleep_time: u64, debug_mode: bool) {
+pub fn capture_screenshot(url: &str, output_file: &str, width: u32, height: u32, ua: &str, sleep_time: u64, debug_mode: bool) {
     log_debug(&format!("> Fetch URL: {}", url), debug_mode);
 
     let args = vec![
