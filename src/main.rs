@@ -53,6 +53,18 @@ fn capture_screenshot(url: &str, output_file: &str, width: u32, height: u32, ua:
     }
 }
 
+fn print_help() {
+    println!("\x1b[32mOptions:\x1b[0m");
+    println!("\x1b[36m  -o, --output\x1b[0m     Output file or path to save the screenshot");
+    println!("\x1b[36m  -d, --debug\x1b[0m      Enable debug output");
+    println!("\x1b[36m  -h, --height\x1b[0m     Screenshot height (default 1080)");
+    println!("\x1b[36m  -w, --width\x1b[0m      Screenshot width (default 1920)");
+    println!("\x1b[36m  -s, --sleep\x1b[0m      Sleep time (in seconds) before taking screenshot (default 0)");
+    println!("\x1b[36m  -u, --ua\x1b[0m         Custom User-Agent string");
+    println!("\x1b[36m  -t, --target\x1b[0m     Target URL to capture (e.g., https://example.com)");
+    println!("\x1b[36m  -d, --dist\x1b[0m       Output file format (png, webp, jpg)");
+}
+
 fn main() {
     let matches = ClapCommand::new("websnap")
         .version("1.0")
@@ -104,18 +116,8 @@ fn main() {
             .help("Print help information"))
         .get_matches();
 
-    if matches.get_flag("help") {
-        println!("Usage: websnap [OPTIONS]\n");
-        println!("Options:");
-        println!("  -o, --output <FILE>     Output file or path to save the screenshot");
-        println!("  -d, --debug             Enable debug output");
-        println!("  -h, --height <PIXELS>   Screenshot height (default 1080)");
-        println!("  -w, --width <PIXELS>    Screenshot width (default 1920)");
-        println!("  -s, --sleep <SECONDS>   Sleep time (in seconds) before taking screenshot (default 0)");
-        println!("  -u, --ua <STRING>       Custom User-Agent string");
-        println!("  -t, --target <URL>      Target URL to capture (e.g., https://example.com)");
-        println!("  --dist <FORMAT>         Output file format (png, webp, jpg)");
-        println!("  -H, --help              Print help information");
+    if matches.get_flag("help") || std::env::args().len() == 1 {
+        print_help();
         std::process::exit(0);
     }
 
@@ -132,10 +134,16 @@ fn main() {
 
     if args.target.is_none() {
         println!("! Target URL is required. Use -t or --target to specify the URL.");
+        let target_url = "https://example.com".to_string();
+        let timestamp = Local::now().format("%Y%m%d%H%M%S").to_string();
+        let file_hash = format!("{:x}", md5::compute(timestamp));
+        let output = args.output.unwrap_or_else(|| format!("{}.{}", file_hash, args.dist.as_deref().unwrap_or("png")));
+        let ua = args.ua.unwrap_or_else(|| "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36".to_string());
+        capture_screenshot(&target_url, &output, args.width.unwrap_or(1920), args.height.unwrap_or(1080), &ua, args.sleep.unwrap_or(0), args.debug);
         std::process::exit(1);
     }
 
-    let target_url = args.target.unwrap_or_else(|| "https://example.com".to_string());
+    let target_url = args.target.unwrap();
     let timestamp = Local::now().format("%Y%m%d%H%M%S").to_string();
     let file_hash = format!("{:x}", md5::compute(timestamp));
     let output = args.output.unwrap_or_else(|| format!("{}.{}", file_hash, args.dist.as_deref().unwrap_or("png")));
