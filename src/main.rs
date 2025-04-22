@@ -62,7 +62,7 @@ fn print_help() {
     println!("\x1b[36m  -s, --sleep\x1b[0m      Sleep time (in seconds) before taking screenshot (default 0)");
     println!("\x1b[36m  -u, --ua\x1b[0m         Custom User-Agent string");
     println!("\x1b[36m  -t, --target\x1b[0m     Target URL to capture (e.g., https://example.com)");
-    println!("\x1b[36m  -f, --format\x1b[0m     Output file format (png, webp, jpg)");
+    println!("\x1b[36m  -f, --format\x1b[0m     Output file format (webp, png, jpg)");
 }
 
 fn main() {
