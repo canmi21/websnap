@@ -10,7 +10,7 @@ homepage = "https://github.com/canmi21/websnap"
 documentation = "https://github.com/canmi21/websnap?tab=readme-ov-file"
 readme = "README.md"
 keywords = ["web","snapshot","wasm"]
-categories = ["command-line-utilities", "WebAssembly"]
+categories = ["command-line-utilities"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
