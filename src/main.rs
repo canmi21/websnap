@@ -1,7 +1,4 @@
-use std::{env, process::Command, thread, time::Duration};
-use std::fs::File;
-use std::io::Write;
-use reqwest::header::{USER_AGENT, HeaderMap};
+use std::{process::Command, thread, time::Duration};
 use chrono::Local;
 use serde::Deserialize;
 
