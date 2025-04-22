@@ -1,0 +1,15 @@
+{
+  "name": "websnap",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "websnap_bg.wasm",
+    "websnap.js",
+    "websnap.d.ts"
+  ],
+  "main": "websnap.js",
+  "types": "websnap.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
