@@ -1,15 +1,17 @@
 import argparse
 import time
 import sys
+import hashlib
 from datetime import datetime
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+import platform
 
 def log_debug(message, debug_mode):
     if debug_mode:
-        print(f"! {message}")
+        print(f"{message}")
 
 def capture_screenshot(url, output_file, width, height, ua, sleep_time, debug_mode):
     chrome_options = Options()
@@ -65,22 +67,19 @@ def main():
 
     args = parser.parse_args()
 
-    if not args.command:
-        print_help()
-        sys.exit(0)
+    if not args.target:
+        print("! Target URL is required. Use -t or --target to specify the URL.")
+        sys.exit(1)
 
     if not args.output:
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        args.output = f"{timestamp}.png"
+        hash_object = hashlib.md5(timestamp.encode())
+        file_hash = hash_object.hexdigest()
+        args.output = f"{file_hash}.png"
 
     if not args.ua:
-        import platform
-        args.ua = f"Mozilla/5.0>({platform.system()}; {platform.release()}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
-    
-    if not args.target:
-        print("Error: Target URL is required. Use -t or --target to specify the URL.")
-        sys.exit(1)
-        
+        args.ua = f"Mozilla/5.0 ({platform.system()}; {platform.release()}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+
     capture_screenshot(args.target, args.output, args.width, args.height, args.ua, args.sleep, args.debug)
 
 if __name__ == '__main__':
