@@ -1,6 +1,7 @@
 use std::{process::Command, thread, time::Duration};
 use chrono::Local;
 use serde::Deserialize;
+use md5;
 
 #[derive(Deserialize)]
 struct Args {
@@ -11,6 +12,7 @@ struct Args {
     sleep: Option<u64>,
     ua: Option<String>,
     target: String,
+    dist: Option<String>,
 }
 
 fn log_debug(message: &str, debug_mode: bool) {
@@ -50,27 +52,41 @@ fn capture_screenshot(url: &str, output_file: &str, width: u32, height: u32, ua:
     }
 }
 
+fn print_help() {
+    println!("\x1b[32mOptions:\x1b[0m");
+    println!("\x1b[36m  -o, --output\x1b[0m     Output file or path to save the screenshot");
+    println!("\x1b[36m  -d, --debug\x1b[0m      Enable debug output");
+    println!("\x1b[36m  -h, --height\x1b[0m     Screenshot height (default 1080)");
+    println!("\x1b[36m  -w, --width\x1b[0m      Screenshot width (default 1920)");
+    println!("\x1b[36m  -s, --sleep\x1b[0m      Sleep time (in seconds) before taking screenshot (default 0)");
+    println!("\x1b[36m  -u, --ua\x1b[0m         Custom User-Agent string");
+    println!("\x1b[36m  -t, --target\x1b[0m     Target URL to capture (e.g., https://example.com)");
+    println!("\x1b[36m  -d, --dist\x1b[0m       Output file format (png, webp, jpg)");
+}
+
 fn main() {
     let args = Args {
-        output: Some("screenshot.png".to_string()),
+        output: None,
         debug: true,
         height: Some(1080),
         width: Some(1920),
         sleep: Some(0),
         ua: Some("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36".to_string()),
         target: "https://example.com".to_string(),
+        dist: Some("png".to_string()),
     };
 
     if args.target.is_empty() {
-        eprintln!("! Target URL is required.");
+        print_help();
         std::process::exit(1);
     }
 
     let timestamp = Local::now().format("%Y%m%d%H%M%S").to_string();
     let file_hash = format!("{:x}", md5::compute(timestamp));
 
-    let output = args.output.unwrap_or_else(|| format!("{}.png", file_hash));
+    let output = args.output.unwrap_or_else(|| format!("{}.{}", file_hash, args.dist.as_deref().unwrap_or("png")));
     let ua = args.ua.unwrap_or_else(|| "Mozilla/5.0".to_string());
+    let dist = args.dist.unwrap_or_else(|| "png".to_string());
 
     capture_screenshot(&args.target, &output, args.width.unwrap_or(1920), args.height.unwrap_or(1080), &ua, args.sleep.unwrap_or(0), args.debug);
 }
