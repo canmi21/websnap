@@ -2,9 +2,22 @@
 name = "websnap"
 version = "0.1.0"
 edition = "2024"
+authors = ["Canmi(Canmi21)<t@canmi.icu>"]
+description = "WebSnap is a command-line tool for capturing screenshots of websites."
+license = "MIT"
+repository = "https://github.com/canmi21/websnap"
+homepage = "https://github.com/canmi21/websnap"
+documentation = "https://github.com/canmi21/websnap?tab=readme-ov-file"
+readme = "README.md"
+keywords = ["web","snapshot","wasm"]
+categories = ["command-line-utilities", "WebAssembly"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "websnap"
+path = "src/main.rs"
 
 [dependencies]
 argh = "0.1.13"
