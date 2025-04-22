@@ -1260,7 +1260,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "webpage_screenshot"
+name = "websnap"
 version = "0.1.0"
 dependencies = [
  "chrono",

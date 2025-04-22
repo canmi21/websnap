@@ -1,5 +1,5 @@
-use headless_chrome::{Browser, LaunchOptions};
-use std::{fs, path::Path, time::Duration};
+use headless_chrome::Browser;
+use std::{fs, time::Duration};
 use clap::{Arg, Command};
 use chrono::Utc;
 use md5;
@@ -13,15 +13,12 @@ fn log_debug(message: &str, debug_mode: bool) {
 fn capture_screenshot(url: &str, output_file: &str, width: i32, height: i32, ua: &str, sleep_time: u64, debug_mode: bool) -> Result<(), Box<dyn std::error::Error>> {
     log_debug(&format!("> Fetch URL: {}", url), debug_mode);
 
-    let options = LaunchOptions {
-        headless: true,
-        window_size: Some((width, height)),
-        args: vec!["--no-sandbox", "--disable-dev-shm-usage", &format!("--user-agent={}", ua)],
-        ..Default::default()
-    };
-
-    let browser = Browser::new(options)?;
+    let browser = Browser::default()?;
     let tab = browser.new_tab()?;
+
+    tab.set_default_timeout(Duration::from_secs(30));
+    tab.set_user_agent(ua)?;
+    tab.set_size(width, height)?;
 
     tab.navigate_to(url)?;
     
@@ -30,7 +27,7 @@ fn capture_screenshot(url: &str, output_file: &str, width: i32, height: i32, ua:
         std::thread::sleep(Duration::from_secs(sleep_time));
     }
 
-    let screenshot = tab.capture_screenshot(headless_chrome::protocol::cdp::Page::CaptureScreenshotFormatOption::Png, None, None, true)?;
+    let screenshot = tab.capture_screenshot(headless_chrome::types::CaptureScreenshotFormatOption::Png, None, true)?;
     fs::write(output_file, screenshot)?;
     
     log_debug(&format!("+ Screenshot saved to {}", output_file), debug_mode);
